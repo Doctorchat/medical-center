@@ -1,7 +1,8 @@
 import Credentials from '@auth/core/providers/credentials';
 
-import NextAuth, { type DefaultSession } from 'next-auth';
+import NextAuth, { type DefaultSession, type User } from 'next-auth';
 import { api } from '@/utils/api';
+import type { ILogin, ILoginResponse } from '@/types';
 
 declare module 'next-auth' {
   interface JWT {
@@ -27,22 +28,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: {},
       },
       authorize: async (credentials) => {
-        let user = null;
+        console.log('Credentials received:', credentials);
 
-        await api.auth
-          .login(credentials)
-          .json<ILoginResponse>()
-          .then((res) => {
-            user = { email: res.medicalCentre?.email, ...res };
-          });
+        try {
+          const res = await api.auth
+            .login(credentials as ILogin)
+            .json<ILoginResponse>();
+          console.log('Login response:', res);
 
-        console.log('SERVER user', user);
+          if (!res || !res.token) {
+            console.error('Invalid credentials');
+            throw new Error('Invalid credentials');
+          }
 
-        if (!user) {
-          throw new Error('Invalid credentials.');
+          return { email: res.medicalCentre?.email, ...res } as User;
+        } catch (err) {
+          console.error('Authorization error:', err);
+          throw new Error('Authorization failed');
         }
-
-        return user;
       },
     }),
   ],
@@ -54,17 +57,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
       }
 
-      console.log('JWT Callback - Token:', token);
-      console.log('JWT Callback - User:', user);
+      // console.log('JWT Callback - Token:', token);
+      // console.log('JWT Callback - User:', user);
 
       return token;
     },
 
     async session({ session, token }) {
-      // session.accessToken = token.accessToken;
+      session.accessToken = token.accessToken;
 
-      console.log('callbacks session', session);
-      console.log('callbacks token', token);
+      // console.log('callbacks session', session);
+      // console.log('callbacks token', token);
       return session;
     },
   },
