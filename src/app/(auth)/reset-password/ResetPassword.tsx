@@ -1,19 +1,15 @@
 'use client';
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React from 'react';
 import Image from 'next/image';
 
-import { Button, Form, Input } from 'antd';
+import { Button } from 'antd';
 import {
   ArrowLeftOutlined,
-  LockOutlined,
   MailOutlined,
   PhoneOutlined,
 } from '@ant-design/icons';
 
-import logo from '@/assets/images/logo.svg';
 import support from '@/assets/images/support.png';
-import Link from 'next/link';
 
 export const ResetPassword: React.FC = () => {
   return (
@@ -36,7 +32,7 @@ export const ResetPassword: React.FC = () => {
           <Button
             size="large"
             type="dashed"
-            href={'#'}
+            href="mailto:info@doctorchat.md"
             icon={<MailOutlined />}
             className="w-full"
           >
@@ -46,7 +42,7 @@ export const ResetPassword: React.FC = () => {
           <Button
             size="large"
             type="dashed"
-            href={'#'}
+            href="tel:+37378272887"
             icon={<PhoneOutlined className="rotate-[110deg]" />}
             className="w-full"
           >

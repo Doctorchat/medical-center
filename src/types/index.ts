@@ -1,3 +1,5 @@
+import { MenuProps } from 'antd';
+
 export interface IMedicalCentre {
   name: string;
   city: string;
@@ -28,3 +30,18 @@ export interface ILogin {
   email: string;
   password: string;
 }
+
+export interface IParams {
+  id?: string;
+}
+
+export interface ISearchParams {
+  [key: string]: string | string[] | undefined;
+}
+
+export interface IParamsAndSearchParams {
+  params?: IParams;
+  searchParams?: ISearchParams;
+}
+
+export type MenuItem = Required<MenuProps>['items'][number];

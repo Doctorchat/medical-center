@@ -1,7 +1,8 @@
 'use client';
 import { ReactNode } from 'react';
 import { SessionProvider } from 'next-auth/react';
-import { ConfigProvider } from 'antd';
+import { App, ConfigProvider } from 'antd';
+import { AppProgressBar as ProgressBar } from 'next-nprogress-bar';
 
 import ro from 'antd/es/locale/ro_RO';
 
@@ -30,9 +31,21 @@ export const Providers = ({ children }: { children: ReactNode }) => {
             colorPrimary: twThemeColors?.dc?.blue,
             colorError: twThemeColors?.dc?.red,
           },
+          components: {
+            Menu: {
+              itemSelectedBg: twThemeColors?.dc?.blue,
+              itemSelectedColor: '#fff',
+            },
+          },
         }}
       >
-        {children}
+        <App>{children}</App>
+        <ProgressBar
+          height="4px"
+          color="#e81f41"
+          options={{ showSpinner: true }}
+          shallowRouting
+        />
       </ConfigProvider>
     </SessionProvider>
   );

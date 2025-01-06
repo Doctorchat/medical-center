@@ -1,24 +1,8 @@
 import Credentials from '@auth/core/providers/credentials';
+import NextAuth, { type User } from 'next-auth';
 
-import NextAuth, { type DefaultSession, type User } from 'next-auth';
-import { api } from '@/utils/api';
-import type { ILogin, ILoginResponse } from '@/types';
-
-declare module 'next-auth' {
-  interface JWT {
-    accessToken?: string;
-    id?: string;
-  }
-
-  interface Session {
-    user: {} & DefaultSession['user'] & ILoginResponse;
-  }
-
-  interface User {
-    id?: string;
-    token?: string;
-  }
-}
+import { authService } from '@/services/auth.service';
+import type { ILogin, ILoginResponse, IMedicalCentre } from '@/types';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -28,13 +12,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: {},
       },
       authorize: async (credentials) => {
-        console.log('Credentials received:', credentials);
-
         try {
-          const res = await api.auth
+          const res = await authService
             .login(credentials as ILogin)
             .json<ILoginResponse>();
-          console.log('Login response:', res);
 
           if (!res || !res.token) {
             console.error('Invalid credentials');
@@ -54,20 +35,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.token;
+        token.medicalCentre = user.medicalCentre;
         token.id = user.id;
       }
-
-      // console.log('JWT Callback - Token:', token);
-      // console.log('JWT Callback - User:', user);
 
       return token;
     },
 
     async session({ session, token }) {
-      session.accessToken = token.accessToken;
-
-      // console.log('callbacks session', session);
-      // console.log('callbacks token', token);
+      session.accessToken = token.accessToken as string;
+      session.user.medicalCentre = token.medicalCentre as IMedicalCentre;
       return session;
     },
   },
