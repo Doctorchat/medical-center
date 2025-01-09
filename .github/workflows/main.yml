@@ -1,0 +1,35 @@
+name: Doctorchat Partners PROD CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create env configs
+        run: |
+          echo "${{ secrets.DEV_NEXT_PUBLIC_API_URL }}" > .env
+          echo "${{ secrets.DEV_NEXTAUTH_URL }}" >> .env
+          echo "${{ secrets.DEV_AUTH_SECRET }}" >> .env
+
+      - name: Build
+        run: CI=false npm run build
+      - name: SSH Deploy
+        uses: kostya-ten/ssh-server-deploy@v4
+        with:
+          host: '31.172.77.196'
+          username: 'doctorchat-partners'
+          password: ${{ secrets.APP_PASSWORD }}
+          scp_source: ".next/"
+          scp_target: "/home/doctorchat-partners/htdocs/partners.doctorchat.md/"
