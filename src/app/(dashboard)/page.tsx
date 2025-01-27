@@ -56,16 +56,39 @@ const columns: TableProps<Appointment>['columns'] = [
     title: 'Client',
     dataIndex: 'user',
     key: 'user',
-    render: (_, { user }) => user?.name,
+    render: (_, { user }) => (
+      <div className="font-medium">
+        <div>{user?.name}</div>
+        <a href={`tel:${user?.phone}`} className="flex text-dc-red max-w-max">
+          {user?.phone}
+        </a>
+        <a
+          href={`mailto:${user?.email}`}
+          className="flex font-normal text-gray-400 max-w-max"
+        >
+          {user?.email}
+        </a>
+      </div>
+    ),
   },
   {
-    title: 'Ora',
-    dataIndex: 'time',
-    key: 'time',
+    title: 'Ora începere',
+    dataIndex: 'start_time',
+    key: 'start_time',
     render: (_, { start_time }) =>
-      DateTime.fromFormat(start_time, 'yyyy-MM-dd HH:mm:ss', {
-        locale: 'ro',
-      }).toFormat('d LLLL yyyy, HH:mm', {
+      DateTime.fromFormat(start_time, 'yyyy-MM-dd HH:mm:ss').toFormat(
+        'd LLLL yyyy, HH:mm',
+        {
+          locale: 'ro',
+        },
+      ),
+  },
+  {
+    title: 'Ora finalizare',
+    dataIndex: 'end_time',
+    key: 'end_time',
+    render: (_, { end_time }) =>
+      DateTime.fromFormat(end_time, 'yyyy-MM-dd HH:mm:ss').toFormat('HH:mm', {
         locale: 'ro',
       }),
   },
