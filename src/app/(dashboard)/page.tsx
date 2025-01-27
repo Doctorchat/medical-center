@@ -112,7 +112,7 @@ export default function HomePage() {
 const StatusConsultationButton: React.FC<{
   consultationId: number;
   statusId: number;
-}> = ({ statusId }) => {
+}> = ({ statusId, consultationId }) => {
   const [selectedStatus, setSelectedStatus] = useState<string>(
     String(statusId),
   );
@@ -155,7 +155,7 @@ const StatusConsultationButton: React.FC<{
     if (!type) return;
 
     mutation.mutate({
-      id: Number(status),
+      id: Number(consultationId),
       type,
     });
   };
