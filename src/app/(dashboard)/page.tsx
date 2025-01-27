@@ -1,17 +1,23 @@
 'use client';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { consultationService } from '@/services/consultation.service';
 
-import { Button, message, Popconfirm, Space, Spin, Table, Tag } from 'antd';
+import { Empty, message, Popover, Space, Spin, Table, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Appointment } from '@/types';
 import type { LiteralUnion } from 'antd/es/_util/type';
 import type { PresetColorKey } from 'antd/es/theme/internal';
+import { EditOutlined, LoadingOutlined } from '@ant-design/icons';
+import { DateTime } from 'luxon';
+import { cn } from '@/utils/classNames';
+
+type ConsultationStatusType = 'cancel' | 'confirm' | 'complete';
 
 interface ConsultationStatus {
   label: string;
   badgeColor: LiteralUnion<PresetColorKey>;
+  type?: ConsultationStatusType;
 }
 
 const CONSULTATION_STATUS: Record<number, ConsultationStatus> = {
@@ -22,16 +28,28 @@ const CONSULTATION_STATUS: Record<number, ConsultationStatus> = {
   1: {
     label: 'Confirmat',
     badgeColor: 'green',
+    type: 'confirm',
   },
   2: {
     label: 'Anulat',
     badgeColor: 'red',
+    type: 'cancel',
   },
   3: {
     label: 'Finalizat',
     badgeColor: 'blue',
+    type: 'complete',
   },
 };
+
+const CONSULTATION_STATUS_LIST = Object.entries(CONSULTATION_STATUS).map(
+  ([key, value]) => {
+    return {
+      value: key,
+      ...value,
+    };
+  },
+);
 
 const columns: TableProps<Appointment>['columns'] = [
   {
@@ -39,6 +57,17 @@ const columns: TableProps<Appointment>['columns'] = [
     dataIndex: 'user',
     key: 'user',
     render: (_, { user }) => user?.name,
+  },
+  {
+    title: 'Ora',
+    dataIndex: 'time',
+    key: 'time',
+    render: (_, { start_time }) =>
+      DateTime.fromFormat(start_time, 'yyyy-MM-dd HH:mm:ss', {
+        locale: 'ro',
+      }).toFormat('d LLLL yyyy, HH:mm', {
+        locale: 'ro',
+      }),
   },
   {
     title: 'Doctor',
@@ -51,17 +80,9 @@ const columns: TableProps<Appointment>['columns'] = [
     title: 'Statut',
     key: 'status',
     dataIndex: 'status',
-    render: (_, { status }) => {
-      const s = CONSULTATION_STATUS[status];
-      return <Tag color={s.badgeColor}>{s.label}</Tag>;
-    },
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: (_, { id }) => (
-      <Space size="middle">
-        <CancelConsultationButton id={id} />
+    render: (_, { status, id }) => (
+      <Space size="large">
+        <StatusConsultationButton statusId={status} consultationId={id} />
       </Space>
     ),
   },
@@ -78,7 +99,7 @@ export default function HomePage() {
   });
 
   if (isLoading) return <Spin spinning />;
-  if (isError) return <div>Sorry There was an Error</div>;
+  if (isError) return <Empty description="Datele lipsesc" />;
 
   console.log(consultations?.data);
   return (
@@ -88,36 +109,94 @@ export default function HomePage() {
   );
 }
 
-const CancelConsultationButton: React.FC<{ id: number }> = ({ id }) => {
+const StatusConsultationButton: React.FC<{
+  consultationId: number;
+  statusId: number;
+}> = ({ statusId }) => {
+  const [selectedStatus, setSelectedStatus] = useState<string>(
+    String(statusId),
+  );
+  const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (id: number) => await consultationService.cancel(id),
+    mutationFn: async ({
+      id,
+      type,
+    }: {
+      id: number;
+      type: ConsultationStatusType;
+    }) => {
+      if (type === 'cancel') {
+        return await consultationService.cancel(id);
+      }
+      if (type === 'confirm') {
+        return await consultationService.confirm(id);
+      }
+      if (type === 'complete') {
+        return await consultationService.complete(id);
+      }
+    },
     onSuccess: () => {
-      message.success('Consultația a fost creată cu succes!');
+      message.success('Datele au fost actualizate');
       queryClient.invalidateQueries({ queryKey: ['consultations-list'] });
     },
-    onError: (error) => {
-      console.error('Eroare la crearea consultației:', error);
-      message.error('A apărut o eroare la crearea consultației.');
+    onError: () => {
+      message.error('A apărut o eroare la actualizarea datelor.');
+      setSelectedStatus(String(statusId));
     },
   });
 
-  const onConfirm = async () => {
-    mutation.mutate(id);
+  const handleStatusSelect = (status: string) => {
+    setSelectedStatus(status);
+    setIsOpen(false);
+
+    const type = CONSULTATION_STATUS[Number(status)]?.type;
+    if (!type) return;
+
+    mutation.mutate({
+      id: Number(status),
+      type,
+    });
   };
 
+  const content = useMemo(
+    () => (
+      <div className="flex flex-col gap-2 max-w-36">
+        {CONSULTATION_STATUS_LIST.map((status) => (
+          <Tag
+            key={status.label}
+            color={status.badgeColor}
+            className={cn('cursor-pointer hover:scale-105 transition', {
+              '!hidden': status?.value === '0',
+            })}
+            onClick={() => handleStatusSelect(status.value)}
+          >
+            {status.label}
+          </Tag>
+        ))}
+      </div>
+    ),
+    [],
+  );
+
   return (
-    <Popconfirm
-      title="Delete the task"
-      description="Are you sure to delete this task?"
-      okText="Yes"
-      cancelText="No"
-      onConfirm={onConfirm}
+    <Popover
+      content={content}
+      trigger="click"
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      placement="bottom"
     >
-      <Button danger loading={mutation.isPending}>
-        Cancel
-      </Button>
-    </Popconfirm>
+      {selectedStatus && (
+        <Tag
+          color={CONSULTATION_STATUS[Number(selectedStatus)]?.badgeColor}
+          icon={mutation?.isPending ? <LoadingOutlined /> : <EditOutlined />}
+          className="cursor-pointer"
+        >
+          {CONSULTATION_STATUS[Number(selectedStatus)]?.label}
+        </Tag>
+      )}
+    </Popover>
   );
 };
