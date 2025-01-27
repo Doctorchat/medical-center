@@ -1,8 +1,9 @@
 'use client';
-import { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { SessionProvider } from 'next-auth/react';
 import { App, ConfigProvider } from 'antd';
 import { AppProgressBar as ProgressBar } from 'next-nprogress-bar';
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 import ro from 'antd/es/locale/ro_RO';
 
@@ -22,6 +23,8 @@ const fullConfig = resolveConfig(tailwindConfig);
 const twThemeColors = fullConfig?.theme?.colors as TailwindColors;
 
 export const Providers = ({ children }: { children: ReactNode }) => {
+  const [queryClient] = useState(() => new QueryClient());
+
   return (
     <SessionProvider>
       <ConfigProvider
@@ -39,7 +42,9 @@ export const Providers = ({ children }: { children: ReactNode }) => {
           },
         }}
       >
-        <App>{children}</App>
+        <QueryClientProvider client={queryClient}>
+          <App>{children}</App>
+        </QueryClientProvider>
         <ProgressBar
           height="4px"
           color="#e81f41"
