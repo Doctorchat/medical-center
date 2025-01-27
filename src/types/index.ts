@@ -45,3 +45,30 @@ export interface IParamsAndSearchParams {
 }
 
 export type MenuItem = Required<MenuProps>['items'][number];
+
+// Consultations
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+}
+
+export interface Doctor {
+  id: number;
+  name: string;
+}
+
+export interface Appointment {
+  id: number;
+  user: User;
+  doctor: Doctor;
+  medical_centre: IMedicalCentre;
+  physical_slot_id: number;
+  status: number;
+  comment: string | null;
+  start_time: string;
+  end_time: string;
+  created_at: string;
+  updated_at: string;
+}

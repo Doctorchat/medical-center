@@ -3,6 +3,7 @@ import NextAuth, { type User } from 'next-auth';
 
 import { authService } from '@/services/auth.service';
 import type { ILogin, ILoginResponse, IMedicalCentre } from '@/types';
+import { skipCSRFCheck } from '@auth/core';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -53,4 +54,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: '/login',
   },
   trustHost: true,
+  skipCSRFCheck: skipCSRFCheck,
+  debug: process.env.NODE_ENV !== 'production',
 });

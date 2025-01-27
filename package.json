@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.2",
+    "@tanstack/react-query": "^5.64.2",
     "antd": "^5.22.7",
-    "axios": "^1.7.9",
     "ky": "^1.7.4",
     "next": "14.2.22",
     "next-auth": "^5.0.0-beta.25",
