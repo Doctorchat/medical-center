@@ -2,17 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import { consultationService } from '@/services/consultation.service';
 
-import {
-  Button,
-  Empty,
-  message,
-  Modal,
-  Popover,
-  Input,
-  Spin,
-  Table,
-  Tag,
-} from 'antd';
+import { Button, message, Modal, Popover, Input, Spin, Table, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Appointment } from '@/types';
