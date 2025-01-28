@@ -7,8 +7,10 @@ class ConsultationService {
     prefixUrl: `${API_URL}/medical-centre/consultations`,
   });
 
-  getAll() {
-    return this.consultationApi.get(`all`).json<{ data: Appointment[] }>();
+  getAll(params?: { search: string }) {
+    return this.consultationApi
+      .get(`all`, { searchParams: params })
+      .json<{ data: Appointment[] }>();
   }
 
   cancel(consultation: number) {
@@ -29,7 +31,7 @@ class ConsultationService {
       .json<Appointment>();
   }
 
-  modifyComment(consultation: number, body: null) {
+  modifyComment(consultation: number, body: string | null) {
     return this.consultationApi
       .put(`${consultation}/modify-comment`, { body })
       .json<Appointment>();
