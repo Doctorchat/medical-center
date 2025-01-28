@@ -6,8 +6,6 @@ import { Image } from 'antd';
 export const Profile: React.FC = () => {
   const { data: session } = useSession();
 
-  console.log(session);
-
   return (
     <div className="sm:p-10 p-5 bg-white rounded-3xl space-y-5">
       <h1 className="text-center text-2xl font-medium">Profil</h1>

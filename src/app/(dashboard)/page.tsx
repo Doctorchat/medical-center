@@ -2,15 +2,33 @@
 import React, { useMemo, useState } from 'react';
 import { consultationService } from '@/services/consultation.service';
 
-import { Empty, message, Popover, Space, Spin, Table, Tag } from 'antd';
+import {
+  Button,
+  Empty,
+  message,
+  Modal,
+  Popover,
+  Input,
+  Spin,
+  Table,
+  Tag,
+} from 'antd';
 import type { TableProps } from 'antd';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Appointment } from '@/types';
 import type { LiteralUnion } from 'antd/es/_util/type';
 import type { PresetColorKey } from 'antd/es/theme/internal';
-import { EditOutlined, LoadingOutlined } from '@ant-design/icons';
+import {
+  EditOutlined,
+  LoadingOutlined,
+  EyeOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import { DateTime } from 'luxon';
 import { cn } from '@/utils/classNames';
+import { useDebounce } from 'react-use';
+
+const { TextArea } = Input;
 
 type ConsultationStatusType = 'cancel' | 'confirm' | 'complete';
 
@@ -104,30 +122,59 @@ const columns: TableProps<Appointment>['columns'] = [
     key: 'status',
     dataIndex: 'status',
     render: (_, { status, id }) => (
-      <Space size="large">
-        <StatusConsultationButton statusId={status} consultationId={id} />
-      </Space>
+      <StatusConsultationButton statusId={status} consultationId={id} />
+    ),
+  },
+
+  {
+    title: 'Comentariu',
+    key: 'comment',
+    dataIndex: 'comment',
+    render: (_, { comment, id, updated_at }) => (
+      <ModifyCommentModal
+        defaultComment={comment}
+        consultationId={id}
+        date={updated_at}
+      />
     ),
   },
 ];
 
 export default function HomePage() {
-  const {
-    data: consultations,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryFn: async () => await consultationService.getAll(),
-    queryKey: ['consultations-list'],
+  const [search, setSearch] = useState<string | null>(null);
+  const [debouncedSearch, setDebouncedSearch] = useState<string | null>(null);
+
+  useDebounce(
+    () => {
+      setDebouncedSearch(search);
+    },
+    500,
+    [search],
+  );
+
+  const { data: consultations, isLoading } = useQuery({
+    queryFn: async () =>
+      await consultationService.getAll(
+        debouncedSearch ? { search: debouncedSearch } : undefined,
+      ),
+    queryKey: ['consultations-list', debouncedSearch],
   });
 
-  if (isLoading) return <Spin spinning />;
-  if (isError) return <Empty description="Datele lipsesc" />;
-
-  console.log(consultations?.data);
   return (
     <>
-      <Table columns={columns} dataSource={consultations?.data} />
+      <div className="mb-5 w-full">
+        <Input
+          placeholder="Căutare după nume, email și telefon..."
+          onChange={(e) => setSearch(e.currentTarget.value)}
+          addonBefore={<SearchOutlined />}
+        />
+      </div>
+
+      <div className="mb-5">{isLoading && <Spin spinning />}</div>
+
+      {!isLoading && (
+        <Table columns={columns} dataSource={consultations?.data} />
+      )}
     </>
   );
 }
@@ -221,5 +268,89 @@ const StatusConsultationButton: React.FC<{
         </Tag>
       )}
     </Popover>
+  );
+};
+
+const ModifyCommentModal: React.FC<{
+  defaultComment: string | null;
+  consultationId: number;
+  date: string;
+}> = ({ defaultComment, consultationId, date }) => {
+  const [commentValue, setCommentValue] = useState(defaultComment);
+  const [open, setOpen] = useState(false);
+
+  const showModal = () => {
+    setOpen(true);
+  };
+
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async () =>
+      await consultationService.modifyComment(consultationId, commentValue),
+    onSuccess: () => {
+      message.success('Datele au fost actualizate');
+      queryClient.invalidateQueries({ queryKey: ['consultations-list'] });
+    },
+    onError: () => {
+      message.error('A apărut o eroare la actualizarea datelor.');
+    },
+  });
+
+  const hideModal = () => {
+    setCommentValue(null);
+    setOpen(false);
+  };
+
+  const onOk = () => {
+    if (defaultComment === commentValue) {
+      hideModal();
+      return;
+    }
+    mutation.mutate();
+    hideModal();
+  };
+
+  return (
+    <>
+      <Button
+        type="default"
+        onClick={showModal}
+        icon={mutation?.isPending ? <LoadingOutlined /> : <EyeOutlined />}
+      >
+        Vezi / modifică
+      </Button>
+      <Modal
+        title="Adăugare/modificare comentariu"
+        open={open}
+        onOk={onOk}
+        onCancel={hideModal}
+        okText="Salvează"
+        cancelText="Anulare"
+      >
+        <div className="flex items-center mb-2 gap-2 text-sm text-gray-400">
+          <div>Ultima actualizare:</div>
+          <div className="text-dc-red">
+            {DateTime.fromISO(date).toFormat('d LLLL yyyy, HH:mm', {
+              locale: 'ro',
+            })}
+          </div>
+        </div>
+
+        <TextArea
+          className="mb-5"
+          defaultValue={defaultComment || ''}
+          value={commentValue || ''}
+          placeholder="Comentariu..."
+          onChange={(e) => setCommentValue(e.currentTarget.value)}
+          maxLength={1000}
+          autoSize={{ minRows: 4 }}
+          count={{
+            show: true,
+            max: 1000,
+          }}
+        />
+      </Modal>
+    </>
   );
 };
