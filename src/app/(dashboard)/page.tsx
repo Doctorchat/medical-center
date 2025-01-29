@@ -285,6 +285,8 @@ const ModifyCommentModal: React.FC<{
     onSuccess: () => {
       message.success('Datele au fost actualizate');
       queryClient.invalidateQueries({ queryKey: ['consultations-list'] });
+      setCommentValue(commentValue);
+      hideModal();
     },
     onError: () => {
       message.error('A apărut o eroare la actualizarea datelor.');
@@ -292,7 +294,6 @@ const ModifyCommentModal: React.FC<{
   });
 
   const hideModal = () => {
-    setCommentValue(mutation.data?.comment || defaultComment);
     setOpen(false);
   };
 
@@ -302,7 +303,6 @@ const ModifyCommentModal: React.FC<{
       return;
     }
     mutation.mutate(commentValue);
-    hideModal();
   };
 
   return (
