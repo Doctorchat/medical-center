@@ -16,92 +16,36 @@ import {
 } from "@/components/ui/sidebar";
 import logo from "@/assets/images/logo.svg";
 import logoWithoutText from "@/assets/images/logo-without-text.svg";
-
-const data = {
-  navMain: [
-    {
-      title: "Tabloul de Bords",
-      url: "/123",
-      icon: GalleryVerticalEnd,
-      isActive: true,
-      items: [
-        {
-          title: "Programări",
-          url: "/",
-        },
-        {
-          title: "Profil",
-          url: "/profile",
-        },
-        /*{
-          title: 'Pacienți',
-          url: '#',
-        },
-        {
-          title: 'Gestionarea Personalului',
-          url: '#',
-        },
-        {
-          title: 'Facturare',
-          url: '#',
-        },
-        {
-          title: 'Rapoarte',
-          url: '#',
-        },*/
-      ],
-    },
-    /*{
-      title: 'Setări',
-      url: '#',
-      icon: SettingsIcon,
-      isActive: false,
-      items: [
-        {
-          title: 'Setări Profil',
-          url: '#',
-        },
-        {
-          title: 'Setări Notificări',
-          url: '#',
-        },
-        {
-          title: 'Setări Sistem',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Ajutor',
-      url: '#',
-      icon: HelpCircle,
-      isActive: false,
-      items: [
-        {
-          title: 'Întrebări Frecvente',
-          url: '#',
-        },
-        {
-          title: 'Contactează Suportul',
-          url: '#',
-        },
-        {
-          title: 'Ghiduri pentru Utilizatori',
-          url: '#',
-        },
-      ],
-    },*/
-  ],
-
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-};
+import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const t = useTranslations();
   const { open } = useSidebar();
+
+  const data = useMemo(
+    () => ({
+      navMain: [
+        {
+          title: t("dashboard"),
+          url: "/123",
+          icon: GalleryVerticalEnd,
+          isActive: true,
+          items: [
+            {
+              title: t("appointments"),
+              url: "/",
+            },
+            {
+              title: t("profile"),
+              url: "/profile",
+            },
+          ],
+        },
+      ],
+    }),
+    [t],
+  );
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -128,7 +72,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

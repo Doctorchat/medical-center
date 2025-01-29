@@ -18,6 +18,7 @@ import { DateTime } from "luxon";
 import { cn } from "@/utils/classNames";
 import { useDebounce } from "react-use";
 import { usePagination } from "@/hooks/use-pagination";
+import { useTranslations } from "next-intl";
 
 const { TextArea } = Input;
 
@@ -31,21 +32,21 @@ interface ConsultationStatus {
 
 const CONSULTATION_STATUS: Record<number, ConsultationStatus> = {
   0: {
-    label: "Rezervat",
+    label: "reserved",
     badgeColor: "gold",
   },
   1: {
-    label: "Confirmat",
+    label: "confirmed",
     badgeColor: "green",
     type: "confirm",
   },
   2: {
-    label: "Anulat",
+    label: "cancelled",
     badgeColor: "red",
     type: "cancel",
   },
   3: {
-    label: "Finalizat",
+    label: "completed",
     badgeColor: "blue",
     type: "complete",
   },
@@ -59,77 +60,6 @@ const CONSULTATION_STATUS_LIST = Object.entries(CONSULTATION_STATUS).map(
     };
   },
 );
-
-const columns: TableProps<IConsultation>["columns"] = [
-  {
-    title: "Client",
-    dataIndex: "user",
-    key: "user",
-    render: (_, { user }) => (
-      <div className="font-medium">
-        <div>{user?.name}</div>
-        <a href={`tel:${user?.phone}`} className="flex text-dc-red max-w-max">
-          {user?.phone}
-        </a>
-        <a
-          href={`mailto:${user?.email}`}
-          className="flex font-normal text-gray-400 max-w-max"
-        >
-          {user?.email}
-        </a>
-      </div>
-    ),
-  },
-  {
-    title: "Ora începere",
-    dataIndex: "start_time",
-    key: "start_time",
-    render: (_, { start_time }) =>
-      DateTime.fromFormat(start_time, "yyyy-MM-dd HH:mm:ss").toFormat(
-        "d LLLL yyyy, HH:mm",
-        {
-          locale: "ro",
-        },
-      ),
-  },
-  {
-    title: "Ora finalizare",
-    dataIndex: "end_time",
-    key: "end_time",
-    render: (_, { end_time }) =>
-      DateTime.fromFormat(end_time, "yyyy-MM-dd HH:mm:ss").toFormat("HH:mm", {
-        locale: "ro",
-      }),
-  },
-  {
-    title: "Doctor",
-    dataIndex: "doctor",
-    key: "doctor",
-    render: (_, { doctor }) => doctor?.name,
-  },
-
-  {
-    title: "Statut",
-    key: "status",
-    dataIndex: "status",
-    render: (_, { status, id }) => (
-      <StatusConsultationButton statusId={status} consultationId={id} />
-    ),
-  },
-
-  {
-    title: "Comentariu",
-    key: "comment",
-    dataIndex: "comment",
-    render: (_, { comment, id, updated_at }) => (
-      <ModifyCommentModal
-        defaultComment={comment}
-        consultationId={id}
-        date={updated_at}
-      />
-    ),
-  },
-];
 
 export default function HomePage() {
   const [search, setSearch] = useState<string | null>(null);
@@ -152,15 +82,100 @@ export default function HomePage() {
           ? { search: debouncedSearch }
           : { per_page: limit, page },
       ),
-    queryKey: ["consultations-list", debouncedSearch, page],
+    queryKey: ["consultations-list", debouncedSearch, page, limit],
   });
+
+  const t = useTranslations();
+
+  const columns: TableProps<IConsultation>["columns"] = useMemo(
+    () => [
+      {
+        title: t("client"),
+        dataIndex: "user",
+        key: "user",
+        render: (_, { user }) => (
+          <div className="font-medium">
+            <div>{user?.name}</div>
+            <a
+              href={`tel:${user?.phone}`}
+              className="flex text-dc-red max-w-max"
+            >
+              {user?.phone}
+            </a>
+            <a
+              href={`mailto:${user?.email}`}
+              className="flex font-normal text-gray-400 max-w-max"
+            >
+              {user?.email}
+            </a>
+          </div>
+        ),
+      },
+
+      {
+        title: t("start_time"),
+        dataIndex: "start_time",
+        key: "start_time",
+        render: (_, { start_time }) =>
+          DateTime.fromFormat(start_time, "yyyy-MM-dd HH:mm:ss").toFormat(
+            "d LLLL yyyy, HH:mm",
+            {
+              locale: "ro",
+            },
+          ),
+      },
+
+      {
+        title: t("end_time"),
+        dataIndex: "end_time",
+        key: "end_time",
+        render: (_, { end_time }) =>
+          DateTime.fromFormat(end_time, "yyyy-MM-dd HH:mm:ss").toFormat(
+            "HH:mm",
+            {
+              locale: "ro",
+            },
+          ),
+      },
+
+      {
+        title: t("doctor"),
+        dataIndex: "doctor",
+        key: "doctor",
+        render: (_, { doctor }) => doctor?.name,
+      },
+
+      {
+        title: t("status"),
+        key: "status",
+        dataIndex: "status",
+        render: (_, { status, id }) => (
+          <StatusConsultationButton statusId={status} consultationId={id} />
+        ),
+      },
+
+      {
+        title: t("comment"),
+        key: "comment",
+        dataIndex: "comment",
+        render: (_, { comment, id, updated_at }) => (
+          <ModifyCommentModal
+            defaultComment={comment}
+            consultationId={id}
+            date={updated_at}
+          />
+        ),
+      },
+    ],
+    [t],
+  );
 
   return (
     <>
       <div className="mb-5 w-full">
         <Input
           size="large"
-          placeholder="Căutare după nume, email și telefon..."
+          placeholder={t("search_by_name_email_phone")}
           onChange={(e) => setSearch(e.currentTarget.value)}
           addonBefore={<SearchOutlined />}
         />
@@ -200,6 +215,7 @@ const StatusConsultationButton: React.FC<{
   consultationId: number;
   statusId: number;
 }> = ({ statusId, consultationId }) => {
+  const t = useTranslations();
   const [selectedStatus, setSelectedStatus] = useState<string>();
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -256,17 +272,17 @@ const StatusConsultationButton: React.FC<{
           <Tag
             key={status.label}
             color={status.badgeColor}
-            className={cn("cursor-pointer hover:scale-105 transition", {
+            className={cn("cursor-pointer hover:scale-105 transition w-full", {
               "!hidden": status?.value === "0",
             })}
             onClick={() => handleStatusSelect(status.value)}
           >
-            {status.label}
+            {t(status?.label)}
           </Tag>
         ))}
       </div>
     ),
-    [],
+    [t],
   );
 
   return (
@@ -283,7 +299,7 @@ const StatusConsultationButton: React.FC<{
           icon={mutation?.isPending ? <LoadingOutlined /> : <EditOutlined />}
           className="cursor-pointer"
         >
-          {CONSULTATION_STATUS[Number(selectedStatus)]?.label}
+          {t(CONSULTATION_STATUS[Number(selectedStatus)]?.label)}
         </Tag>
       )}
     </Popover>
@@ -295,6 +311,7 @@ const ModifyCommentModal: React.FC<{
   consultationId: number;
   date: string;
 }> = ({ defaultComment, consultationId, date }) => {
+  const t = useTranslations();
   const [commentValue, setCommentValue] = useState(defaultComment);
   const [open, setOpen] = useState(false);
 
@@ -337,18 +354,18 @@ const ModifyCommentModal: React.FC<{
         onClick={showModal}
         icon={mutation?.isPending ? <LoadingOutlined /> : <EyeOutlined />}
       >
-        Vezi / modifică
+        {t("view_edit")}
       </Button>
       <Modal
-        title="Adăugare/modificare comentariu"
+        title={t("add_edit_comment")}
         open={open}
         onOk={onOk}
         onCancel={hideModal}
-        okText="Salvează"
-        cancelText="Anulare"
+        okText={t("save")}
+        cancelText={t("cancel")}
       >
         <div className="flex items-center mb-2 gap-2 text-sm text-gray-400">
-          <div>Ultima actualizare:</div>
+          <div>{t("last_update")}:</div>
           <div className="text-dc-red">
             {DateTime.fromISO(date).toFormat("d LLLL yyyy, HH:mm", {
               locale: "ro",
@@ -360,7 +377,7 @@ const ModifyCommentModal: React.FC<{
           className="mb-5"
           defaultValue={defaultComment || ""}
           value={commentValue || ""}
-          placeholder="Comentariu..."
+          placeholder={`${t("comment")}...`}
           onChange={(e) => setCommentValue(e.currentTarget.value)}
           maxLength={1000}
           autoSize={{ minRows: 4 }}

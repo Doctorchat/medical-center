@@ -1,14 +1,16 @@
-'use client';
-import React from 'react';
-import { useSession } from 'next-auth/react';
-import { Image } from 'antd';
+"use client";
+import React from "react";
+import { useSession } from "next-auth/react";
+import { Image } from "antd";
+import { useTranslations } from "next-intl";
 
 export const Profile: React.FC = () => {
+  const t = useTranslations();
   const { data: session } = useSession();
 
   return (
     <div className="sm:p-10 p-5 bg-white rounded-3xl space-y-5">
-      <h1 className="text-center text-2xl font-medium">Profil</h1>
+      <h1 className="text-center text-2xl font-medium">{t("profile")}</h1>
 
       <div className="flex gap-5">
         <Image
@@ -22,31 +24,31 @@ export const Profile: React.FC = () => {
 
         <div className="space-y-3">
           <div className="flex gap-2">
-            <div className="opacity-70">Nume:</div>
+            <div className="opacity-70">{t("name")}:</div>
             <div className="font-semibold">
               {session?.user?.medicalCentre?.name}
             </div>
           </div>
           <div className="flex gap-2">
-            <div className="opacity-70">Localitate:</div>
+            <div className="opacity-70">{t("city")}:</div>
             <div className="font-semibold">
               {session?.user?.medicalCentre?.city}
             </div>
           </div>
           <div className="flex gap-2">
-            <div className="opacity-70">Adresa:</div>
+            <div className="opacity-70">{t("address")}:</div>
             <div className="font-semibold">
               {session?.user?.medicalCentre?.address}
             </div>
           </div>
           <div className="flex gap-2">
-            <div className="opacity-70">Telefon:</div>
+            <div className="opacity-70">{t("phone")}:</div>
             <div className="font-semibold">
               {session?.user?.medicalCentre?.phone}
             </div>
           </div>
           <div className="flex gap-2">
-            <div className="opacity-70">Email:</div>
+            <div className="opacity-70">{t("email")}:</div>
             <div className="font-semibold">
               {session?.user?.medicalCentre?.email}
             </div>
