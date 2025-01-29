@@ -1,4 +1,4 @@
-import { parseAsInteger, useQueryState } from 'nuqs';
+import { parseAsInteger, useQueryState } from "nuqs";
 
 interface IProps {
   defaultLimit?: number;
@@ -10,17 +10,17 @@ export const usePagination = ({
   defaultPage = 1,
 }: IProps = {}) => {
   const [limit, setLimit] = useQueryState(
-    'limit',
+    "limit",
     parseAsInteger.withDefault(defaultLimit),
   );
   const [page, setPage] = useQueryState(
-    'page',
+    "page",
     parseAsInteger.withDefault(defaultPage),
   );
 
   const start = (page - 1) * limit;
 
-  const updateLimit = (newLimit: number) => setLimit(newLimit);
+  const updateLimit = (_: number, newLimit: number) => setLimit(newLimit);
   const updatePage = (newPage: number) => setPage(newPage);
 
   return { limit, page, start, updateLimit, updatePage };

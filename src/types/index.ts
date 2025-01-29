@@ -1,4 +1,4 @@
-import { MenuProps } from 'antd';
+import { MenuProps } from "antd";
 
 export interface IMedicalCentre {
   name: string;
@@ -44,25 +44,25 @@ export interface IParamsAndSearchParams {
   searchParams?: ISearchParams;
 }
 
-export type MenuItem = Required<MenuProps>['items'][number];
+export type MenuItem = Required<MenuProps>["items"][number];
 
 // Consultations
-export interface User {
+export interface IUser {
   id: number;
   name: string;
   email: string;
   phone: string;
 }
 
-export interface Doctor {
+export interface IDoctor {
   id: number;
   name: string;
 }
 
-export interface Appointment {
+export interface IConsultation {
   id: number;
-  user: User;
-  doctor: Doctor;
+  user: IUser;
+  doctor: IDoctor;
   medical_centre: IMedicalCentre;
   physical_slot_id: number;
   status: number;
@@ -71,4 +71,34 @@ export interface Appointment {
   end_time: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface IPaginationLink {
+  url: string | null;
+  label: string;
+  active: boolean;
+}
+
+export interface IPaginationMeta {
+  current_page: number;
+  from: number;
+  last_page: number;
+  links: IPaginationLink[];
+  path: string;
+  per_page: number;
+  to: number;
+  total: number;
+}
+
+export interface IPaginationLinks {
+  first: string;
+  last: string;
+  prev: string | null;
+  next: string | null;
+}
+
+export interface IConsultationResponse {
+  data: IConsultation[];
+  links: IPaginationLinks;
+  meta: IPaginationMeta;
 }

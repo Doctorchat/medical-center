@@ -1,27 +1,27 @@
-'use client';
-import React, { useMemo, useState } from 'react';
-import { consultationService } from '@/services/consultation.service';
+"use client";
+import React, { useEffect, useMemo, useState } from "react";
+import { consultationService } from "@/services/consultation.service";
 
-import { message, Modal, Popover, Input, Spin, Table, Tag, Button } from 'antd';
-import type { TableProps } from 'antd';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Appointment } from '@/types';
-import type { LiteralUnion } from 'antd/es/_util/type';
-import type { PresetColorKey } from 'antd/es/theme/internal';
+import { message, Modal, Popover, Input, Spin, Table, Tag, Button } from "antd";
+import type { TableProps } from "antd";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { IConsultation } from "@/types";
+import type { LiteralUnion } from "antd/es/_util/type";
+import type { PresetColorKey } from "antd/es/theme/internal";
 import {
   EditOutlined,
   LoadingOutlined,
   EyeOutlined,
   SearchOutlined,
-} from '@ant-design/icons';
-import { DateTime } from 'luxon';
-import { cn } from '@/utils/classNames';
-import { useDebounce } from 'react-use';
-import { usePagination } from '@/hooks/usePagination';
+} from "@ant-design/icons";
+import { DateTime } from "luxon";
+import { cn } from "@/utils/classNames";
+import { useDebounce } from "react-use";
+import { usePagination } from "@/hooks/use-pagination";
 
 const { TextArea } = Input;
 
-type ConsultationStatusType = 'cancel' | 'confirm' | 'complete';
+type ConsultationStatusType = "cancel" | "confirm" | "complete";
 
 interface ConsultationStatus {
   label: string;
@@ -31,23 +31,23 @@ interface ConsultationStatus {
 
 const CONSULTATION_STATUS: Record<number, ConsultationStatus> = {
   0: {
-    label: 'Rezervat',
-    badgeColor: 'gold',
+    label: "Rezervat",
+    badgeColor: "gold",
   },
   1: {
-    label: 'Confirmat',
-    badgeColor: 'green',
-    type: 'confirm',
+    label: "Confirmat",
+    badgeColor: "green",
+    type: "confirm",
   },
   2: {
-    label: 'Anulat',
-    badgeColor: 'red',
-    type: 'cancel',
+    label: "Anulat",
+    badgeColor: "red",
+    type: "cancel",
   },
   3: {
-    label: 'Finalizat',
-    badgeColor: 'blue',
-    type: 'complete',
+    label: "Finalizat",
+    badgeColor: "blue",
+    type: "complete",
   },
 };
 
@@ -60,11 +60,11 @@ const CONSULTATION_STATUS_LIST = Object.entries(CONSULTATION_STATUS).map(
   },
 );
 
-const columns: TableProps<Appointment>['columns'] = [
+const columns: TableProps<IConsultation>["columns"] = [
   {
-    title: 'Client',
-    dataIndex: 'user',
-    key: 'user',
+    title: "Client",
+    dataIndex: "user",
+    key: "user",
     render: (_, { user }) => (
       <div className="font-medium">
         <div>{user?.name}</div>
@@ -81,46 +81,46 @@ const columns: TableProps<Appointment>['columns'] = [
     ),
   },
   {
-    title: 'Ora începere',
-    dataIndex: 'start_time',
-    key: 'start_time',
+    title: "Ora începere",
+    dataIndex: "start_time",
+    key: "start_time",
     render: (_, { start_time }) =>
-      DateTime.fromFormat(start_time, 'yyyy-MM-dd HH:mm:ss').toFormat(
-        'd LLLL yyyy, HH:mm',
+      DateTime.fromFormat(start_time, "yyyy-MM-dd HH:mm:ss").toFormat(
+        "d LLLL yyyy, HH:mm",
         {
-          locale: 'ro',
+          locale: "ro",
         },
       ),
   },
   {
-    title: 'Ora finalizare',
-    dataIndex: 'end_time',
-    key: 'end_time',
+    title: "Ora finalizare",
+    dataIndex: "end_time",
+    key: "end_time",
     render: (_, { end_time }) =>
-      DateTime.fromFormat(end_time, 'yyyy-MM-dd HH:mm:ss').toFormat('HH:mm', {
-        locale: 'ro',
+      DateTime.fromFormat(end_time, "yyyy-MM-dd HH:mm:ss").toFormat("HH:mm", {
+        locale: "ro",
       }),
   },
   {
-    title: 'Doctor',
-    dataIndex: 'doctor',
-    key: 'doctor',
+    title: "Doctor",
+    dataIndex: "doctor",
+    key: "doctor",
     render: (_, { doctor }) => doctor?.name,
   },
 
   {
-    title: 'Statut',
-    key: 'status',
-    dataIndex: 'status',
+    title: "Statut",
+    key: "status",
+    dataIndex: "status",
     render: (_, { status, id }) => (
       <StatusConsultationButton statusId={status} consultationId={id} />
     ),
   },
 
   {
-    title: 'Comentariu',
-    key: 'comment',
-    dataIndex: 'comment',
+    title: "Comentariu",
+    key: "comment",
+    dataIndex: "comment",
     render: (_, { comment, id, updated_at }) => (
       <ModifyCommentModal
         defaultComment={comment}
@@ -135,7 +135,7 @@ export default function HomePage() {
   const [search, setSearch] = useState<string | null>(null);
   const [debouncedSearch, setDebouncedSearch] = useState<string | null>(null);
 
-  const { limit, page, updatePage } = usePagination();
+  const { limit, page, updatePage, updateLimit } = usePagination();
 
   useDebounce(
     () => {
@@ -152,33 +152,41 @@ export default function HomePage() {
           ? { search: debouncedSearch }
           : { per_page: limit, page },
       ),
-    queryKey: ['consultations-list', debouncedSearch, page],
+    queryKey: ["consultations-list", debouncedSearch, page],
   });
-
-  console.table(consultations?.data);
 
   return (
     <>
       <div className="mb-5 w-full">
         <Input
+          size="large"
           placeholder="Căutare după nume, email și telefon..."
           onChange={(e) => setSearch(e.currentTarget.value)}
           addonBefore={<SearchOutlined />}
         />
       </div>
 
-      <div className="mb-5">{isLoading && <Spin spinning />}</div>
+      {isLoading && (
+        <div className="mb-5 flex h-full">
+          {isLoading && <div className="m-auto">{<Spin spinning />}</div>}
+        </div>
+      )}
 
       {!isLoading && (
         <Table
+          bordered
           columns={columns}
           dataSource={consultations?.data}
-          scroll={{ x: 'max-content' }}
+          scroll={{ x: "max-content" }}
           pagination={
             !debouncedSearch && {
+              total: consultations?.meta?.total,
               current: page,
+              showSizeChanger: true,
               pageSize: limit,
-              total: 3,
+              defaultPageSize: limit,
+              pageSizeOptions: ["1", "2", "5", "10", "20", "50"],
+              onShowSizeChange: updateLimit,
               onChange: updatePage,
             }
           }
@@ -192,11 +200,13 @@ const StatusConsultationButton: React.FC<{
   consultationId: number;
   statusId: number;
 }> = ({ statusId, consultationId }) => {
-  const [selectedStatus, setSelectedStatus] = useState<string>(
-    String(statusId),
-  );
+  const [selectedStatus, setSelectedStatus] = useState<string>();
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    setSelectedStatus(String(statusId));
+  }, [consultationId, statusId]);
 
   const mutation = useMutation({
     mutationFn: async ({
@@ -206,22 +216,22 @@ const StatusConsultationButton: React.FC<{
       id: number;
       type: ConsultationStatusType;
     }) => {
-      if (type === 'cancel') {
+      if (type === "cancel") {
         return await consultationService.cancel(id);
       }
-      if (type === 'confirm') {
+      if (type === "confirm") {
         return await consultationService.confirm(id);
       }
-      if (type === 'complete') {
+      if (type === "complete") {
         return await consultationService.complete(id);
       }
     },
     onSuccess: () => {
-      message.success('Datele au fost actualizate');
-      queryClient.invalidateQueries({ queryKey: ['consultations-list'] });
+      message.success("Datele au fost actualizate");
+      queryClient.invalidateQueries({ queryKey: ["consultations-list"] });
     },
     onError: () => {
-      message.error('A apărut o eroare la actualizarea datelor.');
+      message.error("A apărut o eroare la actualizarea datelor.");
       setSelectedStatus(String(statusId));
     },
   });
@@ -246,8 +256,8 @@ const StatusConsultationButton: React.FC<{
           <Tag
             key={status.label}
             color={status.badgeColor}
-            className={cn('cursor-pointer hover:scale-105 transition', {
-              '!hidden': status?.value === '0',
+            className={cn("cursor-pointer hover:scale-105 transition", {
+              "!hidden": status?.value === "0",
             })}
             onClick={() => handleStatusSelect(status.value)}
           >
@@ -298,13 +308,13 @@ const ModifyCommentModal: React.FC<{
     mutationFn: async (comment: string | null) =>
       await consultationService.modifyComment(consultationId, comment),
     onSuccess: () => {
-      message.success('Datele au fost actualizate');
-      queryClient.invalidateQueries({ queryKey: ['consultations-list'] });
+      message.success("Datele au fost actualizate");
+      queryClient.invalidateQueries({ queryKey: ["consultations-list"] });
       setCommentValue(commentValue);
       hideModal();
     },
     onError: () => {
-      message.error('A apărut o eroare la actualizarea datelor.');
+      message.error("A apărut o eroare la actualizarea datelor.");
     },
   });
 
@@ -340,16 +350,16 @@ const ModifyCommentModal: React.FC<{
         <div className="flex items-center mb-2 gap-2 text-sm text-gray-400">
           <div>Ultima actualizare:</div>
           <div className="text-dc-red">
-            {DateTime.fromISO(date).toFormat('d LLLL yyyy, HH:mm', {
-              locale: 'ro',
+            {DateTime.fromISO(date).toFormat("d LLLL yyyy, HH:mm", {
+              locale: "ro",
             })}
           </div>
         </div>
 
         <TextArea
           className="mb-5"
-          defaultValue={defaultComment || ''}
-          value={commentValue || ''}
+          defaultValue={defaultComment || ""}
+          value={commentValue || ""}
           placeholder="Comentariu..."
           onChange={(e) => setCommentValue(e.currentTarget.value)}
           maxLength={1000}
