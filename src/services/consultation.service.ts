@@ -7,7 +7,7 @@ class ConsultationService {
     prefixUrl: `${API_URL}/medical-centre/consultations`,
   });
 
-  getAll(params?: { search: string }) {
+  getAll(params?: { search?: string; per_page?: number; page?: number }) {
     return this.consultationApi
       .get(`all`, { searchParams: params })
       .json<{ data: Appointment[] }>();

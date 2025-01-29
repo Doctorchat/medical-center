@@ -2,7 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import { consultationService } from '@/services/consultation.service';
 
-import { Button, message, Modal, Popover, Input, Spin, Table, Tag } from 'antd';
+import { message, Modal, Popover, Input, Spin, Table, Tag, Button } from 'antd';
 import type { TableProps } from 'antd';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Appointment } from '@/types';
@@ -17,6 +17,7 @@ import {
 import { DateTime } from 'luxon';
 import { cn } from '@/utils/classNames';
 import { useDebounce } from 'react-use';
+import { usePagination } from '@/hooks/usePagination';
 
 const { TextArea } = Input;
 
@@ -134,6 +135,8 @@ export default function HomePage() {
   const [search, setSearch] = useState<string | null>(null);
   const [debouncedSearch, setDebouncedSearch] = useState<string | null>(null);
 
+  const { limit, page, updatePage } = usePagination();
+
   useDebounce(
     () => {
       setDebouncedSearch(search);
@@ -145,10 +148,14 @@ export default function HomePage() {
   const { data: consultations, isLoading } = useQuery({
     queryFn: async () =>
       await consultationService.getAll(
-        debouncedSearch ? { search: debouncedSearch } : undefined,
+        debouncedSearch
+          ? { search: debouncedSearch }
+          : { per_page: limit, page },
       ),
-    queryKey: ['consultations-list', debouncedSearch],
+    queryKey: ['consultations-list', debouncedSearch, page],
   });
+
+  console.table(consultations?.data);
 
   return (
     <>
@@ -167,6 +174,14 @@ export default function HomePage() {
           columns={columns}
           dataSource={consultations?.data}
           scroll={{ x: 'max-content' }}
+          pagination={
+            !debouncedSearch && {
+              current: page,
+              pageSize: limit,
+              total: 3,
+              onChange: updatePage,
+            }
+          }
         />
       )}
     </>

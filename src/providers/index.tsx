@@ -10,6 +10,7 @@ import ro from 'antd/es/locale/ro_RO';
 import resolveConfig from 'tailwindcss/resolveConfig';
 import tailwindConfig from '../../tailwind.config';
 import { DefaultColors } from 'tailwindcss/types/generated/colors';
+import { NuqsAdapter } from 'nuqs/adapters/react';
 
 interface TailwindColors extends DefaultColors {
   dc: {
@@ -43,7 +44,9 @@ export const Providers = ({ children }: { children: ReactNode }) => {
         }}
       >
         <QueryClientProvider client={queryClient}>
-          <App>{children}</App>
+          <NuqsAdapter>
+            <App>{children}</App>
+          </NuqsAdapter>
         </QueryClientProvider>
         <ProgressBar
           height="4px"
