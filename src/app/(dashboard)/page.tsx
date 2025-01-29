@@ -292,7 +292,7 @@ const ModifyCommentModal: React.FC<{
   });
 
   const hideModal = () => {
-    setCommentValue(defaultComment);
+    setCommentValue(mutation.data?.comment || defaultComment);
     setOpen(false);
   };
 
