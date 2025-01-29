@@ -292,7 +292,7 @@ const ModifyCommentModal: React.FC<{
   });
 
   const hideModal = () => {
-    setCommentValue(null);
+    setCommentValue(defaultComment);
     setOpen(false);
   };
 
