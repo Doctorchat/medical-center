@@ -163,7 +163,11 @@ export default function HomePage() {
       <div className="mb-5">{isLoading && <Spin spinning />}</div>
 
       {!isLoading && (
-        <Table columns={columns} dataSource={consultations?.data} />
+        <Table
+          columns={columns}
+          dataSource={consultations?.data}
+          scroll={{ x: 'max-content' }}
+        />
       )}
     </>
   );
@@ -276,8 +280,8 @@ const ModifyCommentModal: React.FC<{
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async () =>
-      await consultationService.modifyComment(consultationId, commentValue),
+    mutationFn: async (comment: string | null) =>
+      await consultationService.modifyComment(consultationId, comment),
     onSuccess: () => {
       message.success('Datele au fost actualizate');
       queryClient.invalidateQueries({ queryKey: ['consultations-list'] });
@@ -297,7 +301,7 @@ const ModifyCommentModal: React.FC<{
       hideModal();
       return;
     }
-    mutation.mutate();
+    mutation.mutate(commentValue);
     hideModal();
   };
 

@@ -31,9 +31,9 @@ class ConsultationService {
       .json<Appointment>();
   }
 
-  modifyComment(consultation: number, body: string | null) {
+  modifyComment(consultation: number, comment: string | null) {
     return this.consultationApi
-      .put(`${consultation}/modify-comment`, { body })
+      .put(`${consultation}/modify-comment`, { json: { comment } })
       .json<Appointment>();
   }
 }
