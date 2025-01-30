@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 
 import {
@@ -33,6 +34,7 @@ export function NavMain({
   }[];
 }) {
   const { toggleSidebar, isMobile } = useSidebar();
+  const pathname = usePathname();
 
   return (
     <SidebarGroup>
@@ -56,7 +58,10 @@ export function NavMain({
                 <SidebarMenuSub>
                   {item.items?.map((subItem) => (
                     <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
+                      <SidebarMenuSubButton
+                        isActive={pathname === subItem?.url}
+                        asChild
+                      >
                         <Link
                           href={subItem.url}
                           {...(isMobile && { onClick: toggleSidebar })}
