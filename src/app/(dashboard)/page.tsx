@@ -282,7 +282,7 @@ const StatusConsultationButton: React.FC<{
         ))}
       </div>
     ),
-    [t],
+    [t, consultationId, statusId],
   );
 
   return (
