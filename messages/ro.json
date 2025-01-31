@@ -14,8 +14,9 @@
   "save": "Salvează",
   "cancel": "Anulare",
   "search_by_name_email_phone": "Căutare după nume, email și telefon",
-  "dashboard": "Tabloul de Bord",
-  "appointments": "Programări",
+  "physical_appointments": "Programări fizice",
+  "list_mode": "Mod Listă",
+  "board_mode": "Mod Panou",
   "profile": "Profil",
   "name": "Nume",
   "city": "Localitate",
@@ -26,5 +27,6 @@
   "logout_confirmation": "Sigur doriți să ieșiți din cont?",
   "logout_warning": "Odată ce vă deconectați, sesiunea dvs. va fi închisă și toate datele nesalvate vor fi pierdute.",
   "confirm_logout": "Da, vreau să ies",
+  "settings": "Setări",
   "view_edit": "Vezi / modifică"
 }

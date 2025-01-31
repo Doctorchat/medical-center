@@ -102,3 +102,10 @@ export interface IConsultationResponse {
   links: IPaginationLinks;
   meta: IPaginationMeta;
 }
+
+export interface IKanban {
+  booked: IConsultation[];
+  confirmed: IConsultation[];
+  today: IConsultation[];
+  last10completed: IConsultation[];
+}
