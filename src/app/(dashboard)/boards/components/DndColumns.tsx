@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import {
   closestCenter,
   DndContext,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -22,16 +23,22 @@ interface IProps {
 }
 
 const columnOrder: (keyof IKanban)[] = [
+  "today",
   "booked",
   "confirmed",
   "last10completed",
-  "today",
 ];
 const droppableColumns = ["confirmed", "last10completed"];
 
 export const DndColumns: React.FC<IProps> = ({ initialData }) => {
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 500,
+        tolerance: 5,
+      },
+    }),
+    useSensor(MouseSensor, {
       activationConstraint: {
         distance: 5,
       },
@@ -83,10 +90,6 @@ export const DndColumns: React.FC<IProps> = ({ initialData }) => {
     const fromColumn = active.data.current?.columnId as keyof IKanban;
     const toColumn = over.id as keyof IKanban;
     const activeId = active?.data?.current?.id;
-
-    /*    console.log("fromColumn", fromColumn);
-    console.log("toColumn", toColumn);
-    console.log("activeId", activeId);*/
 
     // Verificăm dacă mutarea este validă
     if (

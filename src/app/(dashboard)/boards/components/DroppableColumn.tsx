@@ -32,10 +32,11 @@ export const DroppableColumn: React.FC<IProps> = ({
     <div
       ref={setNodeRef}
       className={cn(
-        "p-4 rounded-xl bg-gray-100 w-72 flex-none",
+        "p-4 rounded-xl bg-gray-100 w-72 flex-none min-h-max h-full",
         isOver && isDroppable && "ring-2 ring-inset ring-transparent",
-        id === "confirmed" && "bg-green-100 ring-green-300",
-        id === "last10completed" && "bg-blue-100 ring-blue-300",
+        id === "booked" && "bg-amber-100",
+        id === "confirmed" && "bg-green-100 ring-green-400",
+        id === "last10completed" && "bg-sky-100 ring-sky-400",
       )}
     >
       <div className="text-base font-semibold mb-2">
