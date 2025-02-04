@@ -74,7 +74,9 @@ export const DndColumns: React.FC<IProps> = ({ initialData }) => {
     onSuccess: () => {
       message.success("Datele au fost actualizate");
       queryClient.invalidateQueries({
-        queryKey: ["consultations-list", "consultations-list-kanban"],
+        predicate: (query) =>
+          query.queryKey[0] === "consultations-list" ||
+          query.queryKey[0] === "consultations-list-kanban",
       });
     },
     onError: () => {
