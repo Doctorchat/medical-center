@@ -5,9 +5,7 @@ import { consultationService } from "@/services/consultation.service";
 import { message, Modal, Popover, Input, Spin, Table, Tag, Button } from "antd";
 import type { TableProps } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { IConsultation } from "@/types";
-import type { LiteralUnion } from "antd/es/_util/type";
-import type { PresetColorKey } from "antd/es/theme/internal";
+import { ConsultationStatusType, IConsultation } from "@/types";
 import {
   EditOutlined,
   LoadingOutlined,
@@ -19,47 +17,12 @@ import { cn } from "@/utils/classNames";
 import { useDebounce } from "react-use";
 import { usePagination } from "@/hooks/use-pagination";
 import { useTranslations } from "next-intl";
+import {
+  CONSULTATION_STATUS,
+  CONSULTATION_STATUS_LIST,
+} from "@/utils/constants";
 
 const { TextArea } = Input;
-
-type ConsultationStatusType = "cancel" | "confirm" | "complete";
-
-interface ConsultationStatus {
-  label: string;
-  badgeColor: LiteralUnion<PresetColorKey>;
-  type?: ConsultationStatusType;
-}
-
-const CONSULTATION_STATUS: Record<number, ConsultationStatus> = {
-  0: {
-    label: "reserved",
-    badgeColor: "gold",
-  },
-  1: {
-    label: "confirmed",
-    badgeColor: "green",
-    type: "confirm",
-  },
-  2: {
-    label: "cancelled",
-    badgeColor: "red",
-    type: "cancel",
-  },
-  3: {
-    label: "completed",
-    badgeColor: "blue",
-    type: "complete",
-  },
-};
-
-const CONSULTATION_STATUS_LIST = Object.entries(CONSULTATION_STATUS).map(
-  ([key, value]) => {
-    return {
-      value: key,
-      ...value,
-    };
-  },
-);
 
 export default function HomePage() {
   const [search, setSearch] = useState<string | null>(null);
@@ -200,7 +163,7 @@ export default function HomePage() {
               showSizeChanger: true,
               pageSize: limit,
               defaultPageSize: limit,
-              pageSizeOptions: ["1", "2", "5", "10", "20", "50"],
+              pageSizeOptions: ["10", "20", "50", "75"],
               onShowSizeChange: updateLimit,
               onChange: updatePage,
             }

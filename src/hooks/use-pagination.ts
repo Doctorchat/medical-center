@@ -6,7 +6,7 @@ interface IProps {
 }
 
 export const usePagination = ({
-  defaultLimit = 1,
+  defaultLimit = 20,
   defaultPage = 1,
 }: IProps = {}) => {
   const [limit, setLimit] = useQueryState(

@@ -1,4 +1,6 @@
 import { MenuProps } from "antd";
+import type { LiteralUnion } from "antd/es/_util/type";
+import type { PresetColorKey } from "antd/es/theme/internal";
 
 export interface IMedicalCentre {
   name: string;
@@ -101,4 +103,19 @@ export interface IConsultationResponse {
   data: IConsultation[];
   links: IPaginationLinks;
   meta: IPaginationMeta;
+}
+
+export interface IKanban {
+  booked: IConsultation[];
+  confirmed: IConsultation[];
+  today: IConsultation[];
+  last10completed: IConsultation[];
+}
+
+export type ConsultationStatusType = "cancel" | "confirm" | "complete";
+
+export interface ConsultationStatus {
+  label: string;
+  badgeColor: LiteralUnion<PresetColorKey>;
+  type?: ConsultationStatusType;
 }

@@ -1,6 +1,6 @@
 import { apiInstance } from "@/utils/api";
 import { API_URL } from "@/utils/constants";
-import { IConsultation, IConsultationResponse } from "@/types";
+import { IConsultation, IConsultationResponse, IKanban } from "@/types";
 
 class ConsultationService {
   private consultationApi = apiInstance.extend({
@@ -11,6 +11,10 @@ class ConsultationService {
     return this.consultationApi
       .get(`all`, { searchParams: params })
       .json<IConsultationResponse>();
+  }
+
+  getKanban() {
+    return this.consultationApi.get(`kanban`).json<IKanban>();
   }
 
   cancel(consultation: number) {
