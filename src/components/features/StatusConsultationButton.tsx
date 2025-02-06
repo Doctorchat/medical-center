@@ -77,7 +77,8 @@ export const StatusConsultationButton: React.FC<{
             key={status.label}
             color={status.badgeColor}
             className={cn("cursor-pointer hover:scale-105 transition w-full", {
-              "!hidden": status?.value === "0",
+              "!hidden":
+                status?.value === "0" || String(statusId) === status?.value,
             })}
             onClick={() => handleStatusSelect(status.value)}
           >

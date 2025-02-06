@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { DraggableItem } from "./DraggableItem";
 import type { IConsultation, IKanban } from "@/types";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface IProps {
   id: keyof IKanban;
@@ -32,20 +33,24 @@ export const DroppableColumn: React.FC<IProps> = ({
     <div
       ref={setNodeRef}
       className={cn(
-        "p-4 rounded-xl bg-gray-100 w-72 flex-none min-h-max h-full",
+        "pb-5 rounded-xl bg-gray-100 w-72 flex-none overflow-hidden",
         isOver && isDroppable && "ring-2 ring-inset ring-transparent",
         id === "booked" && "bg-amber-100",
         id === "confirmed" && "bg-green-100 ring-green-400",
         id === "last10completed" && "bg-sky-100 ring-sky-400",
       )}
     >
-      <div className="text-base font-semibold mb-2">
+      <div className="text-base font-semibold p-5">
         {t(KANBAN_COLUMNS_IDS[id])}
       </div>
 
-      {items.map((item) => (
-        <DraggableItem key={item?.id} data={item} columnId={id} />
-      ))}
+      <ScrollArea className="h-[calc(100%_-_theme(spacing.14))]">
+        <div className="px-5">
+          {items?.map((item) => (
+            <DraggableItem key={item?.id} data={item} columnId={id} />
+          ))}
+        </div>
+      </ScrollArea>
     </div>
   );
 };

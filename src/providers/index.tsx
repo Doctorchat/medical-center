@@ -4,15 +4,20 @@ import { SessionProvider } from "next-auth/react";
 import { App, ConfigProvider } from "antd";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { NuqsAdapter } from "nuqs/adapters/react";
+import resolveConfig from "tailwindcss/resolveConfig";
+
+import dayjs from "dayjs";
+import "dayjs/locale/ro";
+import "dayjs/locale/ru";
 
 import ro from "antd/es/locale/ro_RO";
 import ru from "antd/es/locale/ru_RU";
 
-import resolveConfig from "tailwindcss/resolveConfig";
 import tailwindConfig from "../../tailwind.config";
-import { DefaultColors } from "tailwindcss/types/generated/colors";
-import { NuqsAdapter } from "nuqs/adapters/react";
-import { Locale } from "@/i18n/config";
+import type { DefaultColors } from "tailwindcss/types/generated/colors";
+import type { Locale } from "@/i18n/config";
+import { Settings } from "luxon";
 
 interface TailwindColors extends DefaultColors {
   dc: {
@@ -38,6 +43,8 @@ export const Providers = ({
   locale: Locale;
 }) => {
   const [queryClient] = useState(() => new QueryClient());
+  Settings.defaultLocale = locale;
+  dayjs.locale(locale);
 
   return (
     <SessionProvider>

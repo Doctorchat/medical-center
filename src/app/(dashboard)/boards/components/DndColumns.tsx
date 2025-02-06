@@ -1,22 +1,28 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   closestCenter,
   DndContext,
+  DragOverlay,
   MouseSensor,
   TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-
+import { message } from "antd";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { DroppableColumn } from "./DroppableColumn";
 
-import type { DragEndEvent } from "@dnd-kit/core/dist/types";
-import { ConsultationStatusType, IKanban } from "@/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { consultationService } from "@/services/consultation.service";
-import { message } from "antd";
+import { DraggableItem } from "@/app/(dashboard)/boards/components/DraggableItem";
+
+import type { DragEndEvent } from "@dnd-kit/core/dist/types";
+import type {
+  ConsultationStatusType,
+  IConsultationDraggable,
+  IKanban,
+} from "@/types";
 
 interface IProps {
   initialData?: IKanban;
@@ -59,7 +65,7 @@ export const DndColumns: React.FC<IProps> = ({ initialData }) => {
       type,
     }: {
       id: number;
-      type: ConsultationStatusType;
+      type: ConsultationStatusType | null;
     }) => {
       if (type === "cancel") {
         return await consultationService.cancel(id);
@@ -78,9 +84,6 @@ export const DndColumns: React.FC<IProps> = ({ initialData }) => {
           query.queryKey[0] === "consultations-list" ||
           query.queryKey[0] === "consultations-list-kanban",
       });
-    },
-    onError: () => {
-      message.error("A apărut o eroare la actualizarea datelor.");
     },
   });
 
@@ -124,15 +127,24 @@ export const DndColumns: React.FC<IProps> = ({ initialData }) => {
     // Actualizăm starea
     setItems(newItems);
 
-    mutation.mutate({
-      id: Number(activeId),
-      type:
-        toColumn === "last10completed"
-          ? "complete"
-          : toColumn === "confirmed"
-            ? "confirm"
-            : "cancel",
-    });
+    mutation.mutate(
+      {
+        id: Number(activeId),
+        type:
+          toColumn === "last10completed"
+            ? "complete"
+            : toColumn === "confirmed"
+              ? "confirm"
+              : null,
+      },
+      {
+        onError: () => {
+          message.error("A apărut o eroare la actualizarea datelor.");
+          console.log("LOH", items);
+          setItems(items);
+        },
+      },
+    );
   };
 
   useEffect(() => {
@@ -141,15 +153,24 @@ export const DndColumns: React.FC<IProps> = ({ initialData }) => {
     }
   }, [initialData]);
 
+  const [draggableItemData, setDraggableItemData] =
+    useState<IConsultationDraggable>();
+
+  console.log(draggableItemData);
   return (
     <DndContext
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
+      onDragStart={(event) =>
+        setDraggableItemData(
+          event?.active?.data?.current as IConsultationDraggable,
+        )
+      }
       sensors={sensors}
     >
       <ScrollArea className="max-h-screen w-full">
         <div className="flex gap-4 md:h-[calc(100vh_-_theme(spacing.12))] h-[calc(100vh_-_theme(spacing.24))]">
-          {columnOrder.map((columnId) => (
+          {columnOrder?.map((columnId) => (
             <DroppableColumn
               key={columnId}
               id={columnId}
@@ -160,6 +181,15 @@ export const DndColumns: React.FC<IProps> = ({ initialData }) => {
         </div>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
+
+      <DragOverlay>
+        {draggableItemData ? (
+          <DraggableItem
+            data={draggableItemData}
+            columnId={draggableItemData?.columnId}
+          />
+        ) : null}
+      </DragOverlay>
     </DndContext>
   );
 };

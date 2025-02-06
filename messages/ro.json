@@ -1,6 +1,7 @@
 {
   "today": "Astăzi",
   "client": "Client",
+  "start_date_time": "Data și ora începere",
   "start_time": "Ora începere",
   "end_time": "Ora finalizare",
   "doctor": "Doctor",
@@ -10,7 +11,7 @@
   "completed": "Finalizat",
   "reserved": "Rezervat",
   "comment": "Comentariu",
-  "add_edit_comment": "Adăugare / modificare comentariu",
+  "edit": "Editare",
   "last_update": "Ultima actualizare",
   "save": "Salvează",
   "cancel": "Anulare",

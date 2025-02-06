@@ -119,3 +119,7 @@ export interface ConsultationStatus {
   badgeColor: LiteralUnion<PresetColorKey>;
   type?: ConsultationStatusType;
 }
+
+export interface IConsultationDraggable extends IConsultation {
+  columnId: string;
+}
