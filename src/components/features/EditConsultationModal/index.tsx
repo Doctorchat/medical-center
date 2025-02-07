@@ -48,7 +48,6 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
 
   const hideModal = () => {
     setOpen(false);
-    setCommentValue(data?.comment);
   };
 
   const onOk = () => {
