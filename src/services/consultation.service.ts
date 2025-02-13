@@ -2,6 +2,12 @@ import { apiInstance } from "@/utils/api";
 import { API_URL } from "@/utils/constants";
 import { IConsultation, IConsultationResponse, IKanban } from "@/types";
 
+type CommentData = {
+  comment: string | null;
+  start_time: string | null;
+  end_time: string | null;
+};
+
 class ConsultationService {
   private consultationApi = apiInstance.extend({
     prefixUrl: `${API_URL}/medical-centre/consultations`,
@@ -35,9 +41,9 @@ class ConsultationService {
       .json<IConsultation>();
   }
 
-  modifyComment(consultation: number, comment: string | null) {
+  modifyLead(consultation: number, data: CommentData) {
     return this.consultationApi
-      .put(`${consultation}/modify-comment`, { json: { comment } })
+      .put(`${consultation}/modify-lead`, { json: { ...data } })
       .json<IConsultation>();
   }
 }

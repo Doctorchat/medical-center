@@ -1,8 +1,8 @@
 "use client";
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, DatePicker, Input, message, Modal } from "antd";
+import { Button, DatePicker, Input, message, Modal, TimePicker } from "antd";
 import { DateTime } from "luxon";
 import dayjs from "dayjs";
 import { Slot } from "@radix-ui/react-slot";
@@ -24,7 +24,25 @@ interface IProps {
 export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
   const t = useTranslations();
   const [commentValue, setCommentValue] = useState(data?.comment);
+  const [startTimeValue, setStartTimeValue] = useState(data?.start_time);
+  const [endTimeValue, setEndTimeValue] = useState(data?.end_time);
+
   const [open, setOpen] = useState(false);
+
+  const isDataChanged = useMemo(() => {
+    return (
+      data?.comment !== commentValue ||
+      data?.start_time !== startTimeValue ||
+      data?.end_time !== endTimeValue
+    );
+  }, [
+    data?.comment,
+    data?.start_time,
+    data?.end_time,
+    commentValue,
+    startTimeValue,
+    endTimeValue,
+  ]);
 
   const showModal = () => {
     setOpen(true);
@@ -33,8 +51,12 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (comment: string | null) =>
-      await consultationService.modifyComment(data?.id, comment),
+    mutationFn: async () =>
+      await consultationService.modifyLead(data?.id, {
+        start_time: startTimeValue,
+        end_time: endTimeValue,
+        comment: commentValue,
+      }),
     onSuccess: () => {
       message.success("Datele au fost actualizate");
       queryClient.invalidateQueries({ queryKey: ["consultations-list"] });
@@ -51,11 +73,11 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
   };
 
   const onOk = () => {
-    if (data?.comment === commentValue) {
+    if (!isDataChanged) {
       hideModal();
       return;
     }
-    mutation.mutate(commentValue);
+    mutation.mutate();
   };
 
   return (
@@ -75,7 +97,9 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
         onCancel={hideModal}
         okText={t("save")}
         cancelText={t("cancel")}
-        okButtonProps={{ disabled: data?.comment === commentValue }}
+        okButtonProps={{
+          disabled: !isDataChanged,
+        }}
         footer={(originNode) => {
           return (
             <div className="flex items-center justify-between gap-2 w-full">
@@ -115,10 +139,36 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
             label={t("start_date_time")}
             value={
               <DatePicker
-                format="DD MMMM, HH:mm:ss"
+                format="DD MMMM, HH:mm"
                 size="large"
-                showTime
-                defaultValue={dayjs(data?.start_time, "YYYY-MM-DD HH:mm:ss")}
+                showTime={{
+                  minuteStep: 5,
+                  showSecond: false,
+                }}
+                allowClear={false}
+                defaultValue={dayjs(startTimeValue, "YYYY-MM-DD HH:mm:ss")}
+                className="w-full"
+                onChange={(value) =>
+                  setStartTimeValue(dayjs(value).format("YYYY-MM-DD HH:mm:ss"))
+                }
+              />
+            }
+          />
+
+          <DrawerItem
+            responsive
+            label={t("end_time")}
+            value={
+              <TimePicker
+                allowClear={false}
+                format="HH:mm"
+                size="large"
+                defaultValue={dayjs(endTimeValue, "YYYY-MM-DD HH:mm:ss")}
+                minuteStep={5}
+                className="w-full"
+                onChange={(value) =>
+                  setEndTimeValue(dayjs(value).format("YYYY-MM-DD HH:mm:ss"))
+                }
               />
             }
           />
@@ -169,7 +219,7 @@ const DrawerItem = ({
       )}
     >
       <div className="text-gray-400">{t(`${label}`)}:</div>
-      <div className="font-medium">{value}</div>
+      <div className="font-medium w-full">{value}</div>
     </div>
   );
 };
