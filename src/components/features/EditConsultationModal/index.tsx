@@ -63,7 +63,11 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
       }),
     onSuccess: () => {
       message.success("Datele au fost actualizate");
-      queryClient.invalidateQueries({ queryKey: ["consultations-list"] });
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          query.queryKey[0] === "consultations-list" ||
+          query.queryKey[0] === "consultations-list-kanban",
+      });
       setCommentValue(commentValue);
       hideModal();
     },
