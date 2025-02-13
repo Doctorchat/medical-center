@@ -11,9 +11,11 @@ import { DateTime } from "luxon";
 import { StatusConsultationButton } from "@/components/features/StatusConsultationButton";
 import { SearchOutlined } from "@ant-design/icons";
 import { EditConsultationModal } from "@/components/features/EditConsultationModal";
+import { StatusConsultationFilter } from "@/components/features/StatusConsultationFilter";
 
 export const ConsultationsList: React.FC = () => {
   const [search, setSearch] = useState<string | null>(null);
+  const [status, setStatus] = useState<number>();
   const [debouncedSearch, setDebouncedSearch] = useState<string | null>(null);
 
   const { limit, page, updatePage, updateLimit } = usePagination();
@@ -123,6 +125,8 @@ export const ConsultationsList: React.FC = () => {
           onChange={(e) => setSearch(e.currentTarget.value)}
           addonBefore={<SearchOutlined />}
         />
+
+        <StatusConsultationFilter />
       </div>
 
       {isLoading && (
