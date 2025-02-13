@@ -24,8 +24,12 @@ interface IProps {
 export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
   const t = useTranslations();
   const [commentValue, setCommentValue] = useState(data?.comment);
-  const [startTimeValue, setStartTimeValue] = useState(data?.start_time);
-  const [endTimeValue, setEndTimeValue] = useState(data?.end_time);
+  const [startTimeValue, setStartTimeValue] = useState(
+    dayjs(data?.start_time).format("YYYY-MM-DD HH:mm"),
+  );
+  const [endTimeValue, setEndTimeValue] = useState(
+    dayjs(data?.end_time).format("YYYY-MM-DD HH:mm"),
+  );
 
   const [open, setOpen] = useState(false);
 
@@ -146,10 +150,10 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
                   showSecond: false,
                 }}
                 allowClear={false}
-                defaultValue={dayjs(startTimeValue, "YYYY-MM-DD HH:mm:ss")}
+                defaultValue={dayjs(startTimeValue, "YYYY-MM-DD HH:mm")}
                 className="w-full"
                 onChange={(value) =>
-                  setStartTimeValue(dayjs(value).format("YYYY-MM-DD HH:mm:ss"))
+                  setStartTimeValue(dayjs(value).format("YYYY-MM-DD HH:mm"))
                 }
               />
             }
@@ -163,12 +167,17 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
                 allowClear={false}
                 format="HH:mm"
                 size="large"
-                defaultValue={dayjs(endTimeValue, "YYYY-MM-DD HH:mm:ss")}
+                defaultValue={dayjs(endTimeValue, "YYYY-MM-DD HH:mm")}
                 minuteStep={5}
                 className="w-full"
-                onChange={(value) =>
-                  setEndTimeValue(dayjs(value).format("YYYY-MM-DD HH:mm:ss"))
-                }
+                onChange={(value) => {
+                  if (!value) return;
+                  const newEndTime = dayjs(value).format("HH:mm");
+                  setEndTimeValue(
+                    dayjs(startTimeValue).format("YYYY-MM-DD") +
+                      ` ${newEndTime}:00`,
+                  );
+                }}
               />
             }
           />
