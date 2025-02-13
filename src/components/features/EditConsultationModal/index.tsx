@@ -175,7 +175,7 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
                   const newEndTime = dayjs(value).format("HH:mm");
                   setEndTimeValue(
                     dayjs(startTimeValue).format("YYYY-MM-DD") +
-                      ` ${newEndTime}:00`,
+                      ` ${newEndTime}`,
                   );
                 }}
               />
