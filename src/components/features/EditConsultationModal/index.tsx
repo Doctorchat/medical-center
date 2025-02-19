@@ -1,8 +1,16 @@
 "use client";
-import React, { ReactNode, useMemo, useState } from "react";
+import React, { ReactNode, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, DatePicker, Input, message, Modal, TimePicker } from "antd";
+import {
+  Alert,
+  Button,
+  DatePicker,
+  Input,
+  message,
+  Modal,
+  TimePicker,
+} from "antd";
 import { DateTime } from "luxon";
 import dayjs from "dayjs";
 import { Slot } from "@radix-ui/react-slot";
@@ -31,13 +39,15 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
     dayjs(data?.end_time).format("YYYY-MM-DD HH:mm"),
   );
 
+  const [error, setError] = useState(false);
   const [open, setOpen] = useState(false);
 
   const isDataChanged = useMemo(() => {
     return (
-      data?.comment !== commentValue ||
-      data?.start_time !== startTimeValue ||
-      data?.end_time !== endTimeValue
+      (data?.comment !== commentValue ||
+        data?.start_time !== startTimeValue ||
+        data?.end_time !== endTimeValue) &&
+      !error
     );
   }, [
     data?.comment,
@@ -46,6 +56,7 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
     commentValue,
     startTimeValue,
     endTimeValue,
+    error,
   ]);
 
   const showModal = () => {
@@ -55,12 +66,17 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async () =>
+    mutationFn: async () => {
+      const endTime = dayjs(endTimeValue).format("HH:mm");
+      const adjustedEndTime =
+        dayjs(startTimeValue).format("YYYY-MM-DD") + ` ${endTime}`;
+
       await consultationService.modifyLead(data?.id, {
         start_time: startTimeValue,
-        end_time: endTimeValue,
+        end_time: adjustedEndTime,
         comment: commentValue,
-      }),
+      });
+    },
     onSuccess: () => {
       message.success("Datele au fost actualizate");
       queryClient.invalidateQueries({
@@ -88,6 +104,23 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
     mutation.mutate();
   };
 
+  useEffect(() => {
+    const isEndTimeGreater =
+      dayjs(endTimeValue).format("HH:mm") >
+      dayjs(startTimeValue).format("HH:mm");
+
+    if (!isEndTimeGreater) {
+      setError(true);
+    }
+    setError(false);
+  }, [startTimeValue, endTimeValue]);
+
+  useEffect(() => {
+    setCommentValue(data?.comment);
+    setStartTimeValue(dayjs(data?.start_time).format("YYYY-MM-DD HH:mm"));
+    setEndTimeValue(dayjs(data?.end_time).format("YYYY-MM-DD HH:mm"));
+  }, [data]);
+
   return (
     <>
       {children ? (
@@ -114,9 +147,9 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
               <div className="text-gray-400 text-left">
                 <div className="text-xs">{t("last_update")}:</div>
                 <div className="text-sm text-dc-red">
-                  {DateTime.fromISO(data?.created_at).toFormat(
-                    "d LLLL yyyy, HH:mm",
-                  )}
+                  {DateTime.fromISO(data?.updated_at, {
+                    zone: "Europe/Chisinau",
+                  }).toFormat("d LLLL yyyy, HH:mm")}
                 </div>
               </div>
               <div className="flex xs:flex-nowrap flex-wrap justify-end gap-2">
@@ -174,17 +207,22 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
                 defaultValue={dayjs(endTimeValue, "YYYY-MM-DD HH:mm")}
                 minuteStep={5}
                 className="w-full"
-                onChange={(value) => {
-                  if (!value) return;
-                  const newEndTime = dayjs(value).format("HH:mm");
-                  setEndTimeValue(
-                    dayjs(startTimeValue).format("YYYY-MM-DD") +
-                      ` ${newEndTime}`,
-                  );
-                }}
+                onChange={(value) =>
+                  setEndTimeValue(dayjs(value).format("YYYY-MM-DD HH:mm"))
+                }
               />
             }
           />
+
+          {error && (
+            <div className="!border-t-0 pb-3">
+              <Alert
+                type="error"
+                showIcon
+                message={t("error.end_time_later_than_start")}
+              />
+            </div>
+          )}
 
           <div className="space-y-1 py-5">
             <label className="text-gray-400" htmlFor="comment">
@@ -220,8 +258,6 @@ const DrawerItem = ({
   value: ReactNode;
   responsive?: boolean;
 }) => {
-  const t = useTranslations();
-
   return (
     <div
       className={cn(
@@ -231,7 +267,7 @@ const DrawerItem = ({
           : "grid",
       )}
     >
-      <div className="text-gray-400">{t(`${label}`)}:</div>
+      <div className="text-gray-400">{label}:</div>
       <div className="font-medium w-full">{value}</div>
     </div>
   );
