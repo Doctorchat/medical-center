@@ -30,5 +30,8 @@
   "logout_warning": "Odată ce vă deconectați, sesiunea dvs. va fi închisă și toate datele nesalvate vor fi pierdute.",
   "confirm_logout": "Da, vreau să ies",
   "settings": "Setări",
-  "view_edit": "Vezi / modifică"
+  "view_edit": "Vezi / modifică",
+  "error": {
+    "end_time_later_than_start": "Ora de finalizare trebuie să fie mai târzie decât ora de început."
+  }
 }

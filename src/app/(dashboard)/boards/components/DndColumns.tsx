@@ -156,7 +156,6 @@ export const DndColumns: React.FC<IProps> = ({ initialData }) => {
   const [draggableItemData, setDraggableItemData] =
     useState<IConsultationDraggable>();
 
-  console.log(draggableItemData);
   return (
     <DndContext
       collisionDetection={closestCenter}
