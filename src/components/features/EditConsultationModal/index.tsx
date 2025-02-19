@@ -110,9 +110,11 @@ export const EditConsultationModal: React.FC<IProps> = ({ data, children }) => {
       dayjs(startTimeValue).format("HH:mm");
 
     if (!isEndTimeGreater) {
+      console.log("isEndTimeGreater");
       setError(true);
+    } else {
+      setError(false);
     }
-    setError(false);
   }, [startTimeValue, endTimeValue]);
 
   useEffect(() => {
